@@ -1,0 +1,119 @@
+@import "tailwindcss";
+
+/* Branding Hauz: warm paper, near-black ink, one hot vermilion accent. */
+:root {
+  --bg: #f3efe6;
+  --surface: #fffdf8;
+  --surface-2: #f1ece1;
+  --line: #e2dccf;
+  --ink: #151311;
+  --ink-2: #4d4740;
+  --muted: #8d857a;
+  --accent: #ff4a1c;
+  --accent-soft: #ffe6dc;
+  --accent-ink: #d63a10;
+  --bar: #ff4a1c;
+  --bar-track: #ebe5d8;
+  --hero: #151311;
+  --hero-ink: #f3efe6;
+  --danger: #c62828;
+  --good: #1b7f4b;
+  --warn: #9a6200;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0e0d;
+    --surface: #181614;
+    --surface-2: #221f1c;
+    --line: #2f2b27;
+    --ink: #f3efe6;
+    --ink-2: #bdb5a9;
+    --muted: #857d72;
+    --accent: #ff5a2e;
+    --accent-soft: #3a1c12;
+    --accent-ink: #ff8a66;
+    --bar: #ff5a2e;
+    --bar-track: #2a2622;
+    --hero: #1c1916;
+    --hero-ink: #f3efe6;
+    --danger: #f07272;
+    --good: #5fd39a;
+    --warn: #e6b450;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--line);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-bar: var(--bar);
+  --color-bar-track: var(--bar-track);
+  --color-hero: var(--hero);
+  --color-hero-ink: var(--hero-ink);
+  --color-danger: var(--danger);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-bricolage);
+  --font-serif: var(--font-instrument-serif);
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Faint paper grain over the whole page. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+.input {
+  @apply h-9 rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20;
+}
+.btn {
+  @apply inline-flex h-9 items-center gap-1.5 rounded-full border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:border-ink disabled:opacity-50 disabled:hover:border-line;
+}
+.btn-primary {
+  @apply inline-flex h-9 items-center gap-1.5 rounded-full bg-accent px-4 text-sm font-semibold text-white shadow-[0_6px_20px_-8px_var(--accent)] transition-transform hover:-translate-y-px disabled:translate-y-0 disabled:opacity-50;
+}
+/* Outline button for use on the dark hero band. */
+.btn-ghost {
+  @apply inline-flex h-9 items-center gap-1.5 rounded-full border border-hero-ink/25 px-4 text-sm font-medium text-hero-ink transition-colors hover:border-hero-ink hover:bg-hero-ink/10;
+}
+.chip {
+  @apply inline-flex items-center rounded-full border border-line bg-surface-2 px-2 py-0.5 text-xs text-ink-2;
+}
+.label {
+  @apply mb-1 block text-[11px] font-semibold uppercase tracking-wider text-muted;
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee { animation: none; }
+}

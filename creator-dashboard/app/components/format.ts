@@ -9,6 +9,16 @@ export function formatPhone(p: string): string {
   return p.length === 10 ? `${p.slice(0, 5)} ${p.slice(5)}` : p;
 }
 
+export function formatCurrency(n: number | null): string {
+  if (n === null || n === undefined) return "—";
+  return `₹${n.toLocaleString("en-IN")}`;
+}
+
+export function formatDate(iso: string | null): string {
+  if (!iso) return "—";
+  return new Date(iso).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+}
+
 export const FOLLOWER_TIERS = [
   { key: "", label: "Any size", min: 0, max: 0 },
   { key: "under1k", label: "Under 1K", min: 0, max: 1_000 },

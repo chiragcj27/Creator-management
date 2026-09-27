@@ -4,13 +4,15 @@ import { toDTO } from "@/lib/query";
 import { GENRES } from "@/lib/genres";
 import { GENRE_STATUSES, STATUSES, type Creator } from "@/lib/types";
 import { cleanPincode, cleanPlace, parseEmails, parsePhones } from "@/lib/parse";
+import { getRoleFromRequest, redactContacts, stripContactInput } from "@/lib/auth";
 
 type Ctx = { params: Promise<{ handle: string }> };
 
-export async function GET(_req: NextRequest, { params }: Ctx) {
+export async function GET(req: NextRequest, { params }: Ctx) {
+  const role = await getRoleFromRequest(req);
   const { handle } = await params;
   const doc = await creatorsCollection(await getDb()).findOne({ handle: handle.toLowerCase() });
-  return doc ? Response.json(toDTO(doc)) : Response.json({ error: "Not found" }, { status: 404 });
+  return doc ? Response.json(redactContacts(toDTO(doc), role)) : Response.json({ error: "Not found" }, { status: 404 });
 }
 
 const str = (v: unknown) => (typeof v === "string" && v.trim() ? v.trim() : null);
@@ -21,9 +23,11 @@ const strList = (v: unknown) => (Array.isArray(v) ? [...new Set(v.filter((x) => 
  * pass genreSource: "browser" when the genre came from checking the profile.
  */
 export async function PATCH(req: NextRequest, { params }: Ctx) {
+  const role = await getRoleFromRequest(req);
   const { handle } = await params;
-  const body = await req.json().catch(() => null);
-  if (!body || typeof body !== "object") return Response.json({ error: "Invalid body" }, { status: 400 });
+  const raw = await req.json().catch(() => null);
+  if (!raw || typeof raw !== "object") return Response.json({ error: "Invalid body" }, { status: 400 });
+  const body = stripContactInput(raw, role);
 
   const set: Partial<Creator> = {};
   if ("name" in body) set.name = str(body.name);
@@ -58,7 +62,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
     { $set: { ...set, updatedAt: new Date() } },
     { returnDocument: "after" },
   );
-  return doc ? Response.json(toDTO(doc)) : Response.json({ error: "Not found" }, { status: 404 });
+  return doc ? Response.json(redactContacts(toDTO(doc), role)) : Response.json({ error: "Not found" }, { status: 404 });
 }
 
 export async function DELETE(_req: NextRequest, { params }: Ctx) {

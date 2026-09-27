@@ -15,8 +15,22 @@ Next.js (App Router) + MongoDB.
      and paste the `mongodb+srv://…` string as `MONGODB_URI`.
    - **Just trying it on this PC:** run `npm run db:local` in its own terminal and keep it open. Data is saved
      in `.mongo-data/`. `MONGODB_URI=mongodb://127.0.0.1:27017` is already set in `.env.example`.
-4. Load the spreadsheet: `npm run import -- "../yash sheet creator.xlsx"`
-5. `npm run dev` and open http://localhost:3000
+4. Set `AUTH_SECRET`, `ADMIN_PASSWORD` and `RESTRICTED_PASSWORD` in `.env.local` — see "Login & roles" below.
+5. Load the spreadsheet: `npm run import -- "../yash sheet creator.xlsx"`
+6. `npm run dev` and open http://localhost:3000
+
+## Login & roles
+
+There are two shared team passwords, set as environment variables — no user accounts to manage:
+
+- `ADMIN_PASSWORD` logs in with **full access**.
+- `RESTRICTED_PASSWORD` logs in with access to everything *except* phone numbers and emails — those fields
+  are hidden in the UI and stripped out of every API response and CSV export for this role, and edits to them
+  are silently ignored.
+
+Set `AUTH_SECRET` to a long random string (used to sign the login session cookie) and keep it private —
+anyone who has it could forge a session. Change both passwords before deploying anywhere reachable by more
+than your team.
 
 ## Adding creators later
 
@@ -61,9 +75,9 @@ Keep batches small (around 50 per session) so Instagram doesn't rate-limit the a
 
 ## Before putting this online
 
-There is **no login yet**. The database holds creators' phone numbers, emails and home addresses, so don't
-deploy it to a public URL until authentication is added. Locally, or on a machine only your team can reach,
-it's fine as is.
+Login is now required (see "Login & roles" above). Before deploying anywhere reachable by more than your
+team, change `ADMIN_PASSWORD`, `RESTRICTED_PASSWORD` and `AUTH_SECRET` from their `.env.local` defaults, and
+serve the site over HTTPS so the session cookie isn't sent in the clear.
 
 ## Project layout
 

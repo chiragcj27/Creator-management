@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
+import { getServerRole } from "@/lib/auth";
+import { RoleProvider } from "@/lib/RoleContext";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -29,13 +31,16 @@ export const metadata: Metadata = {
   description: "Branding Hauz: search, filter and manage Instagram creators",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const role = await getServerRole();
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${bricolage.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <RoleProvider role={role}>{children}</RoleProvider>
+      </body>
     </html>
   );
 }

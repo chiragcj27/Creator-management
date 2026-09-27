@@ -9,6 +9,8 @@ import { FOLLOWER_TIERS, GENRE_STATUS_LABEL, formatFollowers, formatPhone } from
 import CreatorDrawer from "./CreatorDrawer";
 import AddCreatorDialog from "./AddCreatorDialog";
 import ImportDialog from "./ImportDialog";
+import TopNav from "./TopNav";
+import { useRole } from "@/lib/RoleContext";
 
 type Count = { value: string; count: number };
 export interface Meta {
@@ -55,6 +57,7 @@ const getJson = async (url: string) => {
 };
 
 export default function Dashboard() {
+  const canSeeContacts = useRole() === "admin";
   // The URL is the source of truth for filters, so a filtered view can be bookmarked or shared.
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -145,7 +148,8 @@ export default function Dashboard() {
                 : "The talent roster behind every Branding Hauz campaign."}
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <TopNav />
             <a className="btn-ghost" href={`/api/export?${toParams(filters)}`}>
               Export CSV{activeFilterCount ? " (filtered)" : ""}
             </a>
@@ -233,7 +237,7 @@ export default function Dashboard() {
                 <Th label="Creator" field="name" filters={filters} onSort={sortBy} />
                 <th className="px-4 py-2 font-medium">Genre</th>
                 <Th label="Followers" field="followers" filters={filters} onSort={sortBy} align="right" />
-                <th className="px-4 py-2 font-medium">Contact</th>
+                {canSeeContacts && <th className="px-4 py-2 font-medium">Contact</th>}
                 <Th label="City" field="city" filters={filters} onSort={sortBy} />
                 <th className="px-4 py-2 font-medium">Lists / campaigns</th>
                 <Th label="Status" field="status" filters={filters} onSort={sortBy} />
@@ -265,11 +269,13 @@ export default function Dashboard() {
                     </div>
                   </td>
                   <td className="px-4 py-2.5 text-right font-display text-base font-semibold tabular-nums">{formatFollowers(c.followers)}</td>
-                  <td className="px-4 py-2.5 text-xs text-ink-2">
-                    {c.phones[0] ? <div className="tabular-nums">{formatPhone(c.phones[0])}</div> : null}
-                    {c.emails[0] ? <div className="max-w-[200px] truncate">{c.emails[0]}</div> : null}
-                    {!c.phones.length && !c.emails.length && <span className="text-muted">—</span>}
-                  </td>
+                  {canSeeContacts && (
+                    <td className="px-4 py-2.5 text-xs text-ink-2">
+                      {c.phones[0] ? <div className="tabular-nums">{formatPhone(c.phones[0])}</div> : null}
+                      {c.emails[0] ? <div className="max-w-[200px] truncate">{c.emails[0]}</div> : null}
+                      {!c.phones.length && !c.emails.length && <span className="text-muted">—</span>}
+                    </td>
+                  )}
                   <td className="px-4 py-2.5 text-ink-2">{c.city ?? <span className="text-muted">—</span>}</td>
                   <td className="px-4 py-2.5">
                     <div className="flex max-w-[240px] flex-wrap gap-1">
@@ -284,7 +290,7 @@ export default function Dashboard() {
               ))}
               {data && data.items.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-4 py-16 text-center text-muted">
+                  <td colSpan={canSeeContacts ? 7 : 6} className="px-4 py-16 text-center text-muted">
                     <div className="font-serif text-3xl italic text-ink-2">Nothing here yet.</div>
                     <div className="mt-1">{meta?.total === 0 ? "Use Import Excel to load your sheets." : "No creators match these filters."}</div>
                   </td>

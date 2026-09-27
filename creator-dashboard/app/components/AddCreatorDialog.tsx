@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useRole } from "@/lib/RoleContext";
 
 export default function AddCreatorDialog({ genres, onClose, onAdded }: { genres: string[]; onClose: () => void; onAdded: (handle: string) => void }) {
+  const canSeeContacts = useRole() === "admin";
   const [f, setF] = useState({ instagram: "", name: "", followers: "", phone: "", email: "", city: "", gender: "", notes: "" });
   const [picked, setPicked] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -39,8 +41,8 @@ export default function AddCreatorDialog({ genres, onClose, onAdded }: { genres:
           <div className="col-span-2">{input("instagram", "Instagram link or @handle *", { required: true, placeholder: "https://www.instagram.com/…", autoFocus: true })}</div>
           {input("name", "Name")}
           {input("followers", "Followers", { placeholder: "e.g. 25K" })}
-          {input("phone", "Phone")}
-          {input("email", "Email", { type: "email" })}
+          {canSeeContacts && input("phone", "Phone")}
+          {canSeeContacts && input("email", "Email", { type: "email" })}
           {input("city", "City")}
           <label className="block">
             <span className="label">Gender</span>

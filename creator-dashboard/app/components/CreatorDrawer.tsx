@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { CreatorDTO } from "@/lib/types";
 import { STATUSES } from "@/lib/types";
+import { useRole } from "@/lib/RoleContext";
 import { GENRE_STATUS_LABEL, formatFollowers, formatPhone } from "./format";
 
 interface Form {
@@ -38,6 +39,8 @@ const toForm = (c: CreatorDTO): Form => ({
 const split = (s: string) => s.split(",").map((x) => x.trim()).filter(Boolean);
 
 export default function CreatorDrawer({ handle, genres, onClose, onChanged }: { handle: string; genres: string[]; onClose: () => void; onChanged: () => void }) {
+  const role = useRole();
+  const canSeeContacts = role === "admin";
   const [creator, setCreator] = useState<CreatorDTO | null>(null);
   const [form, setForm] = useState<Form | null>(null);
   const [saving, setSaving] = useState(false);
@@ -79,8 +82,7 @@ export default function CreatorDrawer({ handle, genres, onClose, onChanged }: { 
       followers: form.followers === "" ? null : Number(form.followers),
       gender: form.gender || null,
       status: form.status,
-      phones: split(form.phones),
-      emails: split(form.emails),
+      ...(canSeeContacts ? { phones: split(form.phones), emails: split(form.emails) } : {}),
       city: form.city,
       state: form.state,
       manager: form.manager,
@@ -181,8 +183,12 @@ export default function CreatorDrawer({ handle, genres, onClose, onChanged }: { 
                   <option>Male</option>
                 </select>
               </Field>
-              <Field label="Phone numbers (comma separated)"><input className="input w-full" value={form.phones} onChange={(e) => upd({ phones: e.target.value })} /></Field>
-              <Field label="Emails (comma separated)"><input className="input w-full" value={form.emails} onChange={(e) => upd({ emails: e.target.value })} /></Field>
+              {canSeeContacts && (
+                <>
+                  <Field label="Phone numbers (comma separated)"><input className="input w-full" value={form.phones} onChange={(e) => upd({ phones: e.target.value })} /></Field>
+                  <Field label="Emails (comma separated)"><input className="input w-full" value={form.emails} onChange={(e) => upd({ emails: e.target.value })} /></Field>
+                </>
+              )}
               <Field label="City"><input className="input w-full" value={form.city} onChange={(e) => upd({ city: e.target.value })} /></Field>
               <Field label="State"><input className="input w-full" value={form.state} onChange={(e) => upd({ state: e.target.value })} /></Field>
               <Field label="Agency contact / manager"><input className="input w-full" value={form.manager} onChange={(e) => upd({ manager: e.target.value })} /></Field>
@@ -228,7 +234,7 @@ export default function CreatorDrawer({ handle, genres, onClose, onChanged }: { 
             )}
 
             <section className="text-xs text-muted">
-              {creator.phones.length > 0 && <div>Phones on file: {creator.phones.map(formatPhone).join(", ")}</div>}
+              {canSeeContacts && creator.phones.length > 0 && <div>Phones on file: {creator.phones.map(formatPhone).join(", ")}</div>}
               <div>Found in {creator.sources.length} sheet row{creator.sources.length === 1 ? "" : "s"}: {[...new Set(creator.sources.map((s) => s.sheet))].join(", ") || "added manually"}</div>
               {creator.firstSeenAt && <div>First form response: {new Date(creator.firstSeenAt).toLocaleDateString()}</div>}
               <div>Last updated: {new Date(creator.updatedAt).toLocaleString()}</div>

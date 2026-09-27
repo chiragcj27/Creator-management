@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { creatorsCollection, getDb } from "@/lib/mongodb";
 import { buildFilter, buildSort } from "@/lib/query";
+import { getRoleFromRequest } from "@/lib/auth";
 
 const COLUMNS: [string, (c: Record<string, unknown>) => unknown][] = [
   ["Handle", (c) => "@" + c.handle],
@@ -30,6 +31,7 @@ const cell = (v: unknown) => {
 
 /** CSV of every creator matching the current filters (opens directly in Excel). */
 export async function GET(req: NextRequest) {
+  const role = await getRoleFromRequest(req);
   const params = req.nextUrl.searchParams;
   const docs = await creatorsCollection(await getDb())
     .find(buildFilter(params), { projection: { details: 0, sources: 0 } })
@@ -37,8 +39,9 @@ export async function GET(req: NextRequest) {
     .sort(buildSort(params))
     .toArray();
 
-  const lines = [COLUMNS.map(([h]) => h).join(",")];
-  for (const d of docs) lines.push(COLUMNS.map(([, get]) => cell(get(d as unknown as Record<string, unknown>))).join(","));
+  const columns = role === "admin" ? COLUMNS : COLUMNS.filter(([h]) => h !== "Phones" && h !== "Emails");
+  const lines = [columns.map(([h]) => h).join(",")];
+  for (const d of docs) lines.push(columns.map(([, get]) => cell(get(d as unknown as Record<string, unknown>))).join(","));
   const date = new Date().toISOString().slice(0, 10);
   return new Response("﻿" + lines.join("\r\n"), {
     headers: {

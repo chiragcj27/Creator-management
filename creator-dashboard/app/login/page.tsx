@@ -1,10 +1,9 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 function LoginForm() {
-  const router = useRouter();
   const params = useSearchParams();
   const next = params.get("next") || "/";
   const [password, setPassword] = useState("");
@@ -26,8 +25,9 @@ function LoginForm() {
       setError(json?.error ?? "Could not log in.");
       return;
     }
-    router.replace(next);
-    router.refresh();
+    // A hard navigation (not the client router) so the role — read server-side from the new
+    // cookie in the root layout — can't be served stale from the client's router cache.
+    window.location.href = next;
   }
 
   return (

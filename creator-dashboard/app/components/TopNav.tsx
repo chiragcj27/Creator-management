@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useRole } from "@/lib/RoleContext";
 import { ROLE_LABEL } from "@/lib/role";
 
@@ -12,13 +12,13 @@ const TABS = [
 
 export default function TopNav() {
   const pathname = usePathname();
-  const router = useRouter();
   const role = useRole();
 
   async function logout() {
     await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/login");
-    router.refresh();
+    // Hard navigation (intentionally not the client router) so no stale, role-dependent page stays cached.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.href = "/login";
   }
 
   return (

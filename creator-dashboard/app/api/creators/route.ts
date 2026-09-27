@@ -4,7 +4,7 @@ import { buildFilter, buildSort, toDTO } from "@/lib/query";
 import { newCreator } from "@/lib/merge";
 import { cleanName, cleanPlace, handleFromText, handleFromUrl, parseEmails, parseFollowers, parseGender, parsePhones } from "@/lib/parse";
 import { GENRES } from "@/lib/genres";
-import { getRoleFromRequest, redactContacts, stripContactInput } from "@/lib/auth";
+import { getRoleFromRequest, redactContacts } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const role = await getRoleFromRequest(req);
@@ -27,13 +27,16 @@ export async function GET(req: NextRequest) {
   return Response.json({ items: items.map((d) => redactContacts(toDTO(d), role)), total, page, pageSize });
 }
 
-/** Add one creator by hand. Body: { instagram, name?, followers?, phone?, email?, city?, state?, gender?, genres?, notes? } */
+/**
+ * Add one creator by hand. Body: { instagram, name?, followers?, phone?, email?, city?, state?, gender?, genres?, notes? }
+ * The restricted role can still capture a new creator's contact details at intake — it just can't see or
+ * edit contact details already on file, which is enforced by redacting the response below.
+ */
 export async function POST(req: NextRequest) {
   const role = await getRoleFromRequest(req);
-  const raw = await req.json().catch(() => null);
-  const handle = handleFromUrl(raw?.instagram) ?? handleFromText(raw?.instagram);
+  const body = await req.json().catch(() => null);
+  const handle = handleFromUrl(body?.instagram) ?? handleFromText(body?.instagram);
   if (!handle) return Response.json({ error: "Enter a valid Instagram profile link or @handle." }, { status: 400 });
-  const body = stripContactInput(raw, role);
 
   const col = creatorsCollection(await getDb());
   if (await col.findOne({ handle }, { projection: { _id: 1 } })) {

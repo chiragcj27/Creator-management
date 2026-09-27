@@ -24,9 +24,11 @@ Next.js (App Router) + MongoDB.
 There are two shared team passwords, set as environment variables — no user accounts to manage:
 
 - `ADMIN_PASSWORD` logs in with **full access**.
-- `RESTRICTED_PASSWORD` logs in with access to everything *except* phone numbers and emails — those fields
-  are hidden in the UI and stripped out of every API response and CSV export for this role, and edits to them
-  are silently ignored.
+- `RESTRICTED_PASSWORD` logs in with access to everything *except* seeing or editing phone numbers and
+  emails already on file — those fields are hidden in the UI and stripped out of every API response and CSV
+  export for this role, and edits to an existing creator's phone/email are silently ignored. The one
+  exception is "+ Add creator": this role can still type in a phone/email for a brand-new creator at intake
+  (e.g. from an inbound DM), it's just never shown back to them afterwards, same as any other creator's.
 
 Set `AUTH_SECRET` to a long random string (used to sign the login session cookie) and keep it private —
 anyone who has it could forge a session. Change both passwords before deploying anywhere reachable by more
